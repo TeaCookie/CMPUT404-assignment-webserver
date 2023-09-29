@@ -26,7 +26,7 @@ import socketserver
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 import os
-
+import urllib.parse
 
 class MyWebServer(socketserver.BaseRequestHandler):
     
@@ -39,6 +39,13 @@ class MyWebServer(socketserver.BaseRequestHandler):
         request = self.data.decode("utf-8").split(" ", 3)
         method = request[0]
         path = request[1]
+        # I have written the whole assignment before failing the path traversal attack on the lab machine and do not 
+        # understand how path normalization and absolutization works
+        # so hopefully accounting for percent encoded attacks is sufficient
+
+        if ".." in urllib.parse.unquote(path): 
+            self.request.sendall(b"HTTP/1.1 404 Not Found\r\n\r\n<html><body><h1>404 Not Found</h1></body></html>")
+            return
 
         if method != "GET":
             self.request.sendall(b"HTTP/1.1 405 Method Not Allowed\r\n\r\n<html><body><h1>405 Method Not Allowed</h1></body></html>")
